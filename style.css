@@ -154,16 +154,17 @@ body {
 
 .main-title {
     font-family: 'Creepster', cursive; /* Using Creepster as a horror alternative */
-    font-size: 5rem;
-    color: transparent;
-    -webkit-text-stroke: 2px var(--stranger-red);
+    font-size: 6rem;
+    color: var(--stranger-red);
     text-shadow: 
-        0 0 10px var(--stranger-red),
-        0 0 20px var(--stranger-red),
-        0 0 40px var(--dark-red);
+        0 0 15px var(--stranger-red),
+        0 0 30px var(--stranger-red),
+        0 0 60px var(--stranger-red),
+        0 0 80px var(--dark-red);
     margin: 0.5rem 0;
     position: relative;
     animation: flicker 3s infinite alternate;
+    letter-spacing: 4px;
 }
 
 .event-status {
