@@ -80,25 +80,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume().then(() => {
                     playSound();
-                });
+                    // Only remove listeners if resume was successful
+                    ['click', 'keydown', 'touchstart'].forEach(e => 
+                        document.removeEventListener(e, unlockAudio)
+                    );
+                }).catch(e => console.log("Audio resume failed:", e));
             } else {
                 playSound();
+                ['click', 'keydown', 'touchstart'].forEach(e => 
+                    document.removeEventListener(e, unlockAudio)
+                );
             }
-            // Remove all listeners once triggered
-            ['click', 'keydown', 'touchstart', 'mousemove'].forEach(e => 
-                document.removeEventListener(e, unlockAudio)
-            );
         };
 
         // Try to play immediately
         if (audioCtx.state !== 'suspended') {
             playSound();
-        } else {
-            // Add listeners for ANY interaction
-            ['click', 'keydown', 'touchstart', 'mousemove'].forEach(e => 
-                document.addEventListener(e, unlockAudio)
-            );
-        }
+        } 
+        
+        // Always add listeners as fallback/ensure, just in case the initial check was optimistic
+        // Browsers often start as 'suspended' or become suspended if no interaction
+        ['click', 'keydown', 'touchstart'].forEach(e => 
+            document.addEventListener(e, unlockAudio)
+        );
     };
 
     initAudio();
