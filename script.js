@@ -52,10 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Audio System - Low Drone Hum (Autoplay with Interaction Fallback)
     const initAudio = () => {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+
         const audioCtx = new AudioContext();
         let isPlaying = false;
 
-        // Function to start the sound
         const playSound = () => {
             if (isPlaying) return;
             
@@ -63,11 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const gainNode = audioCtx.createGain();
             
             oscillator.type = 'sawtooth';
-            oscillator.frequency.setValueAtTime(50, audioCtx.currentTime); // Low drone
+            oscillator.frequency.setValueAtTime(60, audioCtx.currentTime); // 60Hz Mains Hum
             
-            // Smooth fade in
+            // Increased volume to make sure it is audible
             gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.02, audioCtx.currentTime + 2); 
+            gainNode.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 1); 
             
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
@@ -75,25 +76,28 @@ document.addEventListener('DOMContentLoaded', () => {
             isPlaying = true;
         };
 
-        // Check if context is suspended (Autoplay policy)
-        if (audioCtx.state === 'suspended') {
-            const resumeAudio = () => {
+        const unlockAudio = () => {
+            if (audioCtx.state === 'suspended') {
                 audioCtx.resume().then(() => {
                     playSound();
-                    // Clean up listeners
-                    document.removeEventListener('click', resumeAudio);
-                    document.removeEventListener('keydown', resumeAudio);
-                    document.removeEventListener('touchstart', resumeAudio);
                 });
-            };
-            
-            // Listen for any interaction to unlock audio
-            document.addEventListener('click', resumeAudio);
-            document.addEventListener('keydown', resumeAudio);
-            document.addEventListener('touchstart', resumeAudio);
-        } else {
-            // Allowed to play immediately
+            } else {
+                playSound();
+            }
+            // Remove all listeners once triggered
+            ['click', 'keydown', 'touchstart', 'mousemove'].forEach(e => 
+                document.removeEventListener(e, unlockAudio)
+            );
+        };
+
+        // Try to play immediately
+        if (audioCtx.state !== 'suspended') {
             playSound();
+        } else {
+            // Add listeners for ANY interaction
+            ['click', 'keydown', 'touchstart', 'mousemove'].forEach(e => 
+                document.addEventListener(e, unlockAudio)
+            );
         }
     };
 
